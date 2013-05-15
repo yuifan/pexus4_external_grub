@@ -16,7 +16,6 @@
 
 LOCAL_PATH := $(call my-dir)
 
-ifneq ($(TARGET_SIMULATOR),true)
 ifeq ($(TARGET_ARCH),x86)
 
 include $(CLEAR_VARS)
@@ -31,11 +30,12 @@ LOCAL_CFLAGS := \
         -Wall -Wmissing-prototypes -Wunused -Wshadow \
         -Wpointer-arith -falign-jumps=1 -falign-loops=1 \
         -falign-functions=1 -Wundef
-LOCAL_CFLAGS += -m32 -O2 -fno-builtin -nostdinc
+LOCAL_CFLAGS += -m32 -O2 -fno-builtin -nostdinc -fno-reorder-functions -fno-stack-protector
 
 LOCAL_C_INCLUDES := $(LOCAL_PATH)/stage1
 
 LOCAL_MODULE := grub_stage1
+LOCAL_MODULE_TAGS := eng
 LOCAL_MODULE_PATH := $(PRODUCT_OUT)/grub
 
 LOCAL_SYSTEM_SHARED_LIBRARIES :=
@@ -46,7 +46,7 @@ include $(BUILD_RAW_EXECUTABLE)
 $(LOCAL_BUILT_MODULE) : PRIVATE_LINK_SCRIPT :=
 $(LOCAL_BUILT_MODULE) : PRIVATE_LIBS :=
 $(LOCAL_BUILT_MODULE) : PRIVATE_RAW_EXECUTABLE_LDFLAGS := \
-	-nostdlib -N -Ttext=7C00 -melf_i386
+	-nostdlib -N -Ttext=0x7C00 -melf_i386
 
 ###################################################################
 ###################################################################
@@ -87,7 +87,7 @@ LOCAL_CFLAGS := \
 	-Wpointer-arith -falign-jumps=1 -falign-loops=1 \
 	-falign-functions=1 -Wundef
 
-LOCAL_CFLAGS += -m32 -Os -fno-builtin -nostdinc
+LOCAL_CFLAGS += -m32 -Os -fno-builtin -nostdinc -fno-reorder-functions -fno-stack-protector
 
 LOCAL_CFLAGS += -DHAVE_CONFIG_H -DFSYS_EXT2FS=1 -DSUPPORT_SERIAL=1
 
@@ -98,6 +98,7 @@ LOCAL_C_INCLUDES := \
 	$(LOCAL_PATH)/stage2
 
 LOCAL_MODULE := grub_pre_stage2
+LOCAL_MODULE_TAGS := eng
 LOCAL_MODULE_PATH := $(PRODUCT_OUT)/grub
 
 LOCAL_SYSTEM_SHARED_LIBRARIES :=
@@ -108,7 +109,7 @@ include $(BUILD_RAW_EXECUTABLE)
 $(LOCAL_BUILT_MODULE) : PRIVATE_LINK_SCRIPT :=
 $(LOCAL_BUILT_MODULE) : PRIVATE_LIBS :=
 $(LOCAL_BUILT_MODULE) : PRIVATE_RAW_EXECUTABLE_LDFLAGS := \
-	-nostdlib -N -Ttext=8200 -melf_i386
+	-nostdlib -N -Ttext=0x8200 -melf_i386
 
 #############################################
 ## Generate the stage2 start file  (2) + (3)
@@ -123,7 +124,7 @@ LOCAL_CFLAGS := \
 	-Wpointer-arith -falign-jumps=1 -falign-loops=1 \
 	-falign-functions=1 -Wundef
 
-LOCAL_CFLAGS += -m32 -Os -fno-builtin -nostdinc
+LOCAL_CFLAGS += -m32 -Os -fno-builtin -nostdinc -fno-reorder-functions -fno-stack-protector
 
 LOCAL_CFLAGS += -DHAVE_CONFIG_H -DFSYS_EXT2FS=1 -DSUPPORT_SERIAL=1
 
@@ -135,6 +136,7 @@ LOCAL_SYSTEM_SHARED_LIBRARIES :=
 LOCAL_SHARED_LIBRARIES :=
 
 LOCAL_MODULE := grub_start_stage2
+LOCAL_MODULE_TAGS := eng
 LOCAL_MODULE_PATH := $(PRODUCT_OUT)/grub
 
 # <generate the header file>
@@ -157,7 +159,7 @@ $(all_objects): $(STAGE2_SIZE_OBJ)
 $(LOCAL_BUILT_MODULE) : PRIVATE_LINK_SCRIPT :=
 $(LOCAL_BUILT_MODULE) : PRIVATE_LIBS :=
 $(LOCAL_BUILT_MODULE) : PRIVATE_RAW_EXECUTABLE_LDFLAGS := \
-	-nostdlib -N -Ttext=8200 -melf_i386
+	-nostdlib -N -Ttext=0x8200 -melf_i386
 
 #############################################
 ## Generate the real deal stage2  (4)
@@ -171,7 +173,7 @@ file := $(PRODUCT_OUT)/grub/grub_stage2
 $(file) : $(my_files) 
 	@echo "target Creating: $@"
 	$(hide) cat $^ > $@
-ALL_PREBUILT += $(file)
+#ALL_PREBUILT += $(file)
 
 
 #############################################################################
@@ -186,7 +188,6 @@ $(grub_full) : $(grub_stage1) $(grub_stage2)
 	$(hide) rm -f $@
 	$(hide) dd if=$(grub_stage1) of=$@ bs=512 count=1 2>/dev/null
 	$(hide) dd if=$(grub_stage2) of=$@ bs=512 seek=1 2>/dev/null
-ALL_PREBUILT += $(grub_full)
+#ALL_PREBUILT += $(grub_full)
 
 endif # x86
-endif # ! sim
